@@ -1,0 +1,5 @@
+<%layout('/boilerplate')%>
+<form class="d-flex justify-content-center p-2 " action="/<%= currentUser._id %>/personaltodo" method="POST">
+    <input type="text" name = "book[title]" id="title" class="form-control border-success rounded-start-pill" placeholder="Enter book title" required>
+    <button class="btn btn-success rounded-end-pill">ADD</button>
+</form>
