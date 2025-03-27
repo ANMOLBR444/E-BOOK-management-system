@@ -9,6 +9,7 @@ const ejsMate = require('ejs-mate');
 const ExpressError = require('./utils/ExpressError');
 
 const app = express();
+app.use(express.static(path.join(__dirname, 'public')));
 const User = require('./models/user');
 const Book = require('./models/book');
 
@@ -72,7 +73,7 @@ app.post('/register', catchAsync(async (req, res, next) => {
         req.login(registeredUser, err => {
             if (err) return next(err);
             req.flash('success', 'Welcome to Study Buddy');
-            res.redirect('/todos')
+            res.redirect('/books')
         })
 
     } catch (e) {
@@ -87,7 +88,7 @@ app.get('/login', (req, res) => {
 })
 app.post('/login', passport.authenticate('local', { failureFlash: true, failureRedirect: '/login' }), (req, res) => {
     req.flash('success', 'Welcome Back!');
-    res.redirect('/todos')
+    res.redirect('/books')
 })
 
 //logout
@@ -100,6 +101,15 @@ app.get('/logout', (req, res, next) => {
         res.redirect('/');
     });
 });
+
+
+//home page
+app.get('/', (req, res) => {
+    res.render('home')
+})
+
+
+
 
 app.get('/books', isLoggedIn, async (req, res) => {
     res.render('books')
@@ -119,6 +129,25 @@ app.get('/books/show', isLoggedIn, async (req, res) => {
     res.render('show', { books })
 })
 
+
+app.get('/books/search', isLoggedIn, async (req, res) => {
+    const { title } = req.query;
+    const books = await Book.find({ title: new RegExp(title, 'i') });
+    res.json(books);
+});
+
+app.get('/books/:id', isLoggedIn, async (req, res) => {
+    const { id } = req.params;
+    const book = await Book.findById(id);
+    res.render('showBook', { book })
+})
+
+app.delete('/books/:id', isLoggedIn, async (req, res) => {
+    const { id } = req.params;
+    await Book.findByIdAndDelete(id);
+    req.flash('success', 'Book deleted successfully!');
+    res.redirect('/books/show');
+});
 
 
 
